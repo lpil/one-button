@@ -2,7 +2,7 @@
   (:require [quil.core :as q]
             [quil.middleware]))
 
-(def frames-per-tick 50)
+(def frames-per-tick 30)
 
 (def tree
   {:one { }
@@ -17,14 +17,14 @@
 
 (defn inc-tick [state]
   (let [size (count (keys tree))
-        tick (-> state :tick inc (mod size))]
+        max-tick (+ 1 size)
+        tick (-> state :tick inc (mod max-tick))]
     (assoc state :tick tick)))
 
 (defn setup []
   {:path []
    :tick 0
-   }
-  )
+   :choices (keys tree)})
 
 (defn step [state]
   (if (= (mod (q/frame-count) frames-per-tick) 0)
@@ -34,15 +34,18 @@
 (defn draw [state]
   (q/background 0)
   (q/stroke 255)
-  (q/text-size 100)
   (q/fill 255)
   (q/text-align :center :center)
   (q/translate (* 0.5 (q/width)) (* 0.5 (q/height)))
 
+  (let [choices (conj (:choices state) :back)
+        display (->> choices (map name) (clojure.string/join " "))
+        current (->> (:tick state) (nth choices))]
 
-  (let [choices (keys tree)
-        current (nth choices (:tick state))]
+    (q/text-size 100)
     (q/text (name current) 0 0)
+    (q/text-size 30)
+    (q/text display 0 200)
     )
   )
 
